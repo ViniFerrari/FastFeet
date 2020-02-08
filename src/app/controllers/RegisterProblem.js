@@ -2,7 +2,7 @@ import * as Yup from 'yup';
 import Order from '../models/Order';
 import Problem from '../models/Problem';
 
-class DeliverymanProblem {
+class RegisterProblem {
   async store(req, res) {
     const schema = Yup.object().shape({
       description: Yup.string().required(),
@@ -27,4 +27,4 @@ class DeliverymanProblem {
   }
 }
 
-export default new DeliverymanProblem();
+export default new RegisterProblem();

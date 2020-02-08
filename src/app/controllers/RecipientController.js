@@ -1,8 +1,5 @@
-// https://skylab.rocketseat.com.br/h/forum/bootcamp/69231aac-e6c5-4664-a722-263a2bfb023d
-// Falta a validação; adicionar as routes; yarn sequelize db:migrate; testes insominia
 import * as Yup from 'yup';
 import Recipient from '../models/Recipient';
-// import User from '../models/User';
 
 class RecipientController {
   async store(req, res) {
@@ -74,7 +71,7 @@ class RecipientController {
       number === recipient.number
     ) {
       return res
-        .status(400)
+        .status(401)
         .json({ error: 'Recipient already exist in this address' });
     }
 

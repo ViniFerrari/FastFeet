@@ -15,6 +15,16 @@ class OrderEndController {
 
     const order = await Order.findByPk(req.params.id);
 
+    if (!order) {
+      return res.status(400).json({ error: 'Order not found.' });
+    }
+
+    if (order.start_date === null) {
+      return res
+        .status(401)
+        .json({ error: 'Order withdrawal has not been recorded.' });
+    }
+
     const date_now = new Date();
 
     await order.update({

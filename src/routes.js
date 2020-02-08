@@ -9,12 +9,12 @@ import DeliverymanController from './app/controllers/DeliverymanController';
 import FileController from './app/controllers/FileController';
 import OrderController from './app/controllers/OrderController';
 import OrderByDeliverymanIdController from './app/controllers/OrderByDeliverymanIdController';
-import DeliverieByDeliverymanIdController from './app/controllers/DeliverieByDeliverymanIdController';
+import OrdersEndByDeliverymanIdController from './app/controllers/OrdersEndByDeliverymanIdController';
 import OrderStartController from './app/controllers/OrderStartController';
 import OrderEndController from './app/controllers/OrderEndController';
 import DistributorProblem from './app/controllers/DistributorProblem';
-import DeliverymanProblem from './app/controllers/DeliverymanProblem';
-import ProblemByIdController from './app/controllers/ProblemByIdController';
+import RegisterProblem from './app/controllers/RegisterProblem';
+import ProblemByIOrderdController from './app/controllers/ProblemByIOrderdController';
 
 import authMiddleware from './app/middlewares/auth';
 
@@ -26,14 +26,14 @@ routes.post('/sessions', SessionController.store);
 
 routes.get('/deliverymans/:id', OrderByDeliverymanIdController.index);
 routes.get(
-  '/deliverymans/:id/deliveries',
-  DeliverieByDeliverymanIdController.index
+  '/deliverymans/:id/orders',
+  OrdersEndByDeliverymanIdController.index
 );
 
 routes.put('/orders/:id/start', OrderStartController.update);
 routes.put('/orders/:id/end', OrderEndController.update);
 
-routes.post('/orders/:id/problems', DeliverymanProblem.store);
+routes.post('/orders/:id/problems', RegisterProblem.store);
 
 routes.use(authMiddleware);
 
@@ -52,7 +52,7 @@ routes.get('/orders/', OrderController.index);
 routes.put('/orders/:id', OrderController.update);
 routes.delete('/orders/:id', OrderController.delete);
 
-routes.get('/orders/:id/problems', ProblemByIdController.index);
+routes.get('/orders/:id/problems', ProblemByIOrderdController.index);
 routes.get('/problems/', DistributorProblem.index);
 routes.delete('/problems/:id/cancel-order', DistributorProblem.delete);
 

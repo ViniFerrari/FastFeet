@@ -3,7 +3,10 @@ import Order from '../models/Order';
 import Deliveryman from '../models/Deliveryman';
 import Recipient from '../models/Recipient';
 import File from '../models/File';
-import Mail from '../../lib/Mail';
+
+import CreationMail from '../jobs/CreationMail';
+import CancellationMail from '../jobs/CancellationMail';
+import Queue from '../../lib/Queue';
 
 class OrderController {
   async index(req, res) {
@@ -58,18 +61,18 @@ class OrderController {
     );
 
     if (!deliverymanExist) {
-      res.status(401).json({ error: 'Deliveryman does not exist.' });
+      res.status(400).json({ error: 'Deliveryman does not exist.' });
     }
 
     const recipientExist = await Recipient.findByPk(req.body.recipient_id);
 
     if (!recipientExist) {
-      res.status(401).json({ error: 'Recipient does not exist.' });
+      res.status(400).json({ error: 'Recipient does not exist.' });
     }
 
     const { id } = await Order.create(req.body);
 
-    const orders = await Order.findOne({
+    const order = await Order.findOne({
       where: { id },
       attributes: ['id', 'product'],
       include: [
@@ -93,23 +96,11 @@ class OrderController {
       ],
     });
 
-    await Mail.sendMail({
-      to: `${orders.deliveryman.name} <${orders.deliveryman.email}>`,
-      subject: 'Novo produto cadastrado',
-      template: 'creation',
-      context: {
-        deliveryman: orders.deliveryman.name,
-        product: orders.product,
-        recipient: orders.recipient.name,
-        street: orders.recipient.street,
-        number: orders.recipient.number,
-        city: orders.recipient.city,
-        state: orders.recipient.state,
-        zip_code: orders.recipient.zip_code,
-      },
+    await Queue.add(CreationMail.key, {
+      order,
     });
 
-    return res.json(orders);
+    return res.json(order);
   }
 
   async update(req, res) {
@@ -125,9 +116,17 @@ class OrderController {
 
     const order = await Order.findByPk(req.params.id);
 
+    if (!order) {
+      return res.status(400).json({ error: 'Order not found.' });
+    }
+
+    if (req.body.deliveryman_id === order.deliveryman_id) {
+      return res.status(400).json({ error: 'Deliveryman is the same.' });
+    }
+
     await order.update(req.body);
 
-    return res.send('Order updated');
+    return res.send(order);
   }
 
   async delete(req, res) {
@@ -153,9 +152,18 @@ class OrderController {
       ],
     });
 
+    if (!order) {
+      return res.status(400).json({ error: 'Order not found.' });
+    }
+
     order.canceled_at = new Date();
 
     await order.save();
+
+    await Queue.add(CancellationMail.key, {
+      order,
+      description: 'Order canceled by Distributor',
+    });
 
     return res.json(order);
   }

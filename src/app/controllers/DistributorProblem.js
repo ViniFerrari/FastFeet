@@ -2,8 +2,10 @@ import Problem from '../models/Problem';
 import Order from '../models/Order';
 import Recipient from '../models/Recipient';
 import File from '../models/File';
-import Mail from '../../lib/Mail';
 import Deliveryman from '../models/Deliveryman';
+
+import CancellationMail from '../jobs/CancellationMail';
+import Queue from '../../lib/Queue';
 
 class DistributorProblem {
   async index(req, res) {
@@ -45,6 +47,12 @@ class DistributorProblem {
   }
 
   async delete(req, res) {
+    const orderExists = await Order.findByPk(req.params.id);
+
+    if (!orderExists) {
+      return res.status(400).json({ error: 'Order not found.' });
+    }
+
     const { order_id, description } = await Problem.findByPk(req.params.id);
 
     const order = await Order.findOne({
@@ -63,15 +71,9 @@ class DistributorProblem {
 
     await order.save();
 
-    await Mail.sendMail({
-      to: `${order.deliveryman.name} <${order.deliveryman.email}>`,
-      subject: 'Encomenda Cancelada',
-      template: 'cancellation',
-      context: {
-        deliveryman: order.deliveryman.name,
-        product: order.product,
-        description,
-      },
+    await Queue.add(CancellationMail.key, {
+      order,
+      description,
     });
 
     return res.json(order);

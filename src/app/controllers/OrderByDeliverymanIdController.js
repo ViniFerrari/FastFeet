@@ -1,4 +1,3 @@
-// import * as Yup from 'yup';
 import Deliveryman from '../models/Deliveryman';
 import Recipient from '../models/Recipient';
 import Order from '../models/Order';
@@ -6,6 +5,12 @@ import File from '../models/File';
 
 class OrderByDeliverymanIdController {
   async index(req, res) {
+    const deliverymanExists = await Deliveryman.findByPk(req.params.id);
+
+    if (!deliverymanExists) {
+      return res.status(400).json({ error: 'Deliveryman not found.' });
+    }
+
     const orders = await Order.findAll({
       where: {
         deliveryman_id: req.params.id,

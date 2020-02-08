@@ -50,6 +50,10 @@ class DeliveymanController {
   async update(req, res) {
     const deliveryman = await Deliveryman.findByPk(req.params.id);
 
+    if (!deliveryman) {
+      return res.status(400).json({ error: 'Deliveryman not found.' });
+    }
+
     const schema = Yup.object().shape({
       name: Yup.string(),
       email: Yup.string().email(),
@@ -80,6 +84,10 @@ class DeliveymanController {
 
   async delete(req, res) {
     const deliveryman = await Deliveryman.findByPk(req.params.id);
+
+    if (!deliveryman) {
+      return res.status(400).json({ error: 'Deliveryman not found.' });
+    }
 
     await deliveryman.destroy();
 

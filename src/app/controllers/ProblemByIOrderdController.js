@@ -1,14 +1,18 @@
 import Problem from '../models/Problem';
 import Order from '../models/Order';
 
-class ProblemByIdController {
+class ProblemByIOrderdController {
   async index(req, res) {
     const { page = 1 } = req.query;
 
-    const { id } = await Order.findByPk(req.params.id);
+    const order = await Order.findByPk(req.params.id);
+
+    if (!order) {
+      return res.status(400).json({ error: 'Order not found.' });
+    }
 
     const problem = await Problem.findAll({
-      where: { order_id: id },
+      where: { order_id: order.id },
       limit: 20,
       offset: (page - 1) * 20,
     });
@@ -17,4 +21,4 @@ class ProblemByIdController {
   }
 }
 
-export default new ProblemByIdController();
+export default new ProblemByIOrderdController();
